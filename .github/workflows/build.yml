@@ -1,4 +1,4 @@
-name: Build and Run C Program
+name: Build and Run Scientific Calculator
 
 on:
   push:
@@ -7,39 +7,5 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Install build-essential (GCC & tools)
-      run: sudo apt-get update && sudo apt-get install -y build-essential
-
-    - name: Show files (debug)
-      run: ls -la
-
-    - name: Compile calculator.c
-      # -O2 optional; -lm links math library
-      run: |
-        gcc -O2 calculator.c -o calculator -lm
-        echo "Compiled binary size:" && ls -lh calculator
-
-    - name: Run program (non-interactive, example input)
-    
-      run: |
-        timeout 5s ./calculator < /dev/null > program_output.txt || true
-        echo "----- PROGRAM OUTPUT (first 200 lines) -----"
-        head -n 200 program_output.txt || true
-
-    - name: Upload compiled binary
-      uses: actions/upload-artifact@v4
-      with:
-        name: calculator-binary
-        path: calculator
-
-    - name: Upload program output (log)
-      uses: actions/upload-artifact@v4
-      with:
-        name: program-output
-        path: program_output.txt
