@@ -22,7 +22,7 @@ jobs:
     - name: Compile calculator.c
       # -O2 optional; -lm links math library
       run: |
-        gcc -O2 calculator.c -o calculator -lm
+        gcc -O2 "college work/calculator.c/calculator.c" -o calculator -lm
         echo "Compiled binary size:" && ls -lh calculator
 
     - name: Run program (non-interactive, example input)
