@@ -1,0 +1,140 @@
+#include <SDL2/SDL.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define WIDTH 800
+#define HEIGHT 600
+
+void resetGame(int *score, int *lives, int *ballSpeed, int *gameOver, SDL_Rect *ball)
+{
+    *score = 0;
+    *lives = 3;
+    *ballSpeed = 5;
+    *gameOver = 0;
+    ball->x = rand() % (WIDTH - ball->w);
+    ball->y = 0;
+}
+
+int main(int argc, char *argv[])
+{
+    SDL_Init(SDL_INIT_VIDEO);
+
+    SDL_Window *window = SDL_CreateWindow(
+        "Catch the Falling Ball - SDL2 Game",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        WIDTH, HEIGHT,
+        0
+    );
+
+    SDL_Renderer *renderer = SDL_CreateRenderer(
+        window, -1, SDL_RENDERER_ACCELERATED
+    );
+
+    srand((unsigned int)time(NULL));
+
+    int running = 1;
+    int gameOver = 0;
+    int score = 0;
+    int lives = 3;
+    int ballSpeed = 5;
+
+    SDL_Event event;
+
+    SDL_Rect player = {350, 550, 100, 20};
+    SDL_Rect ball = {rand() % (WIDTH - 20), 0, 20, 20};
+    SDL_Rect lifeBox;
+
+    printf("Controls:\n");
+    printf("LEFT / RIGHT arrows → Move\n");
+    printf("R → Restart Game\n");
+    printf("ESC → Quit\n\n");
+
+    while (running)
+    {
+
+        while (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_QUIT)
+                running = 0;
+
+            if (event.type == SDL_KEYDOWN)
+            {
+                if (event.key.keysym.sym == SDLK_ESCAPE)
+                    running = 0;
+
+                if (event.key.keysym.sym == SDLK_r)
+                    resetGame(&score, &lives, &ballSpeed, &gameOver, &ball);
+            }
+        }
+
+
+        if (!gameOver)
+        {
+            const Uint8 *keys = SDL_GetKeyboardState(NULL);
+            if (keys[SDL_SCANCODE_LEFT] && player.x > 0)
+                player.x -= 6;
+            if (keys[SDL_SCANCODE_RIGHT] && player.x < WIDTH - player.w)
+                player.x += 6;
+
+
+            ball.y += ballSpeed;
+
+
+            if (SDL_HasIntersection(&ball, &player))
+            {
+                score++;
+                ballSpeed++;
+                ball.y = 0;
+                ball.x = rand() % (WIDTH - ball.w);
+                printf("Score: %d | Lives: %d\n", score, lives);
+            }
+
+
+            if (ball.y > HEIGHT)
+            {
+                lives--;
+                ball.y = 0;
+                ball.x = rand() % (WIDTH - ball.w);
+                printf("Score: %d | Lives: %d\n", score, lives);
+
+                if (lives <= 0)
+                {
+                    gameOver = 1;
+                    printf("\nGAME OVER — Press R to Restart or ESC to Quit\n");
+                }
+            }
+        }
+
+
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderFillRect(renderer, &player);
+
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderFillRect(renderer, &ball);
+
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        for (int i = 0; i < lives; i++)
+        {
+            lifeBox.x = 10 + i * 25;
+            lifeBox.y = 10;
+            lifeBox.w = 20;
+            lifeBox.h = 20;
+            SDL_RenderFillRect(renderer, &lifeBox);
+        }
+
+        SDL_RenderPresent(renderer);
+        SDL_Delay(16);
+    }
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    return 0;
+}
